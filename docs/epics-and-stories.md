@@ -1,0 +1,90 @@
+- Epic: Task Data Model
+  - Story: Add required `title` field
+    - Acceptance: Creating or editing a task without a non-empty title is prevented and shows a validation message
+    - Technical: Frontend: add form validation in `packages/frontend/src/TaskForm.js` to require title; update `packages/frontend/src/App.js`/`TaskList.js` to handle validation errors. No backend changes required for MVP.
+  - Story: Add `priority` enum (P1, P2, P3) with default P3
+    - Acceptance: New tasks default to `P3` when no priority is selected; stored tasks preserve priority values
+    - Technical: Frontend: extend task model in `packages/frontend/src/TaskForm.js` and `packages/frontend/src/TaskList.js` to include `priority`; ensure defaulting logic lives in creation flow. Persist to localStorage key used by frontend.
+  - Story: Add optional `dueDate` field (ISO YYYY-MM-DD)
+    - Acceptance: Users can enter a due date in YYYY-MM-DD format and it is stored and displayed correctly
+    - Technical: Frontend: add date input in `packages/frontend/src/TaskForm.js`; normalize dates to ISO `YYYY-MM-DD` before saving to localStorage. UI display in `TaskList.js` should format/display ISO strings.
+  - Story: Ignore invalid `dueDate` values
+    - Acceptance: Invalid or unparsable dueDate values are ignored and treated as if the task had no due date
+    - Technical: Frontend: validate/parsing logic in `packages/frontend/src/TaskForm.js` (reject or clear invalid input). Store tasks without a `dueDate` if parsing fails.
+
+- Epic: Local Persistence
+  - Story: Persist tasks to local storage
+    - Acceptance: Creating, updating, completing, or deleting tasks updates local storage immediately
+    - Technical: Frontend: update persistence helper in `packages/frontend/src` (or add one) to write task list to `localStorage` after every change. No backend changes required.
+  - Story: Load tasks from local storage on app start
+    - Acceptance: On page load, tasks are loaded from local storage and displayed in the UI
+    - Technical: Frontend: read and hydrate application state from `localStorage` during app initialization in `packages/frontend/src/index.js` or `App.js`.
+
+- Epic: Task CRUD UI
+  - Story: Add task creation form with title, due date, priority
+    - Acceptance: A visible form allows users to create a task with title, optional due date, and priority; submit creates the task and stores it
+    - Technical: Frontend: update or extend `packages/frontend/src/TaskForm.js` to include inputs for title, dueDate, priority and wire submit to state + persistence. Add unit tests in `packages/frontend/__tests__/`.
+  - Story: Add task edit UI
+    - Acceptance: Users can open an edit UI for a task, change title/dueDate/priority, save changes, and see the updated values persisted
+    - Technical: Frontend: implement edit flow in `TaskList.js` and `TaskForm.js` (reuse form for edit mode). Ensure updates write to localStorage. Add tests for edit behavior.
+  - Story: Add task delete action
+    - Acceptance: Users can delete a task and it is removed from the UI and local storage
+    - Technical: Frontend: add delete handler in `TaskList.js` that updates state and localStorage.
+  - Story: Add task complete / toggle completed
+    - Acceptance: Users can toggle a task's completed state; completed tasks persist and are visible in "All" view
+    - Technical: Frontend: add completed property to task model; add toggle handler in `TaskList.js` and persist changes.
+
+- Epic: Filters and Views
+  - Story: Add "All" filter/tab
+    - Acceptance: "All" shows completed and incomplete tasks
+    - Technical: Frontend: add filter UI and state in `App.js`/`TaskList.js` to support an "All" tab. Filtering logic runs client-side.
+  - Story: Add "Today" filter/tab
+    - Acceptance: "Today" shows only incomplete tasks whose dueDate equals the current date
+    - Technical: Frontend: implement date-based filter logic in `TaskList.js` (compare normalized ISO dates to current date).
+  - Story: Add "Overdue" filter/tab
+    - Acceptance: "Overdue" shows only incomplete tasks whose dueDate is before the current date
+    - Technical: Frontend: implement overdue filter logic; ensure timezone-consistent comparisons using local date arithmetic in frontend helper.
+  - Story: Ensure Today and Overdue filters show only incomplete tasks
+    - Acceptance: When switching to Today or Overdue, completed tasks are excluded from the list
+    - Technical: Frontend: integrate completed flag into filter predicates.
+
+- Epic: Validation & Defaults
+  - Story: Enforce title required on create/edit
+    - Acceptance: Attempts to save a task without a title are blocked with a clear error
+    - Technical: Frontend: validation in `TaskForm.js` with user-facing error states.
+  - Story: Default priority to P3 when unset
+    - Acceptance: Tasks created without selecting priority are saved with `P3`
+    - Technical: Frontend: default value logic in creation flow (TaskForm / state initializer).
+  - Story: Treat invalid dueDate as absent
+    - Acceptance: Tasks with invalid dueDate values are stored without a dueDate and do not appear in date-based filters
+    - Technical: Frontend: parsing utility in `packages/frontend/src` to validate ISO dates and strip invalid values before persistence.
+
+- Epic: Post-MVP Visuals
+  - Story: Highlight overdue tasks visually
+    - Acceptance: Tasks that are overdue are visually distinguishable (e.g., red text or background) in lists
+    - Technical: Frontend: UI styles in `packages/frontend/src/App.css` or `TaskList.js` to apply an "overdue" class; update tests to assert styling where applicable.
+  - Story: Add color-coded priority badges (P1 red, P2 orange, P3 gray)
+    - Acceptance: Each task displays a badge showing its priority color-coded per spec
+    - Technical: Frontend: add badge component or markup in `TaskList.js` and CSS rules in `App.css`.
+
+- Epic: Post-MVP Sorting
+  - Story: Implement sort: overdue first
+    - Acceptance: When sorting is applied, overdue tasks appear before non-overdue tasks
+    - Technical: Frontend: sorting function in `TaskList.js` that composes overdue check, priority, then dueDate; unit-test sorting logic.
+  - Story: Implement sort: priority (P1→P3)
+    - Acceptance: Within the same overdue/non-overdue group, tasks are ordered P1 then P2 then P3
+    - Technical: Frontend: include priority comparator in sorting utility.
+  - Story: Implement sort: due date ascending
+    - Acceptance: Tasks with the same priority are ordered by due date ascending
+    - Technical: Frontend: include dueDate comparator in sorting utility; ensure undefined dates are handled (treated as after dated tasks).
+  - Story: Place undated tasks last
+    - Acceptance: Tasks without a dueDate appear after tasks with due dates
+    - Technical: Frontend: sorting utility must treat missing dueDate as greater than any date.
+
+- Epic: Post-MVP UX Enhancements
+  - Story: Add subtle transitions for add/edit/complete actions
+    - Acceptance: Add/edit/complete actions include subtle visual transitions that do not block functionality
+    - Technical: Frontend: add CSS transitions in `App.css` for list insert/remove and state changes.
+  - Story: Improve accessibility (keyboard nav and ARIA attributes)
+    - Acceptance: Key interactive elements include ARIA attributes; keyboard navigation is functional for basic flows (focusable controls)
+    - Technical: Frontend: add ARIA attributes and ensure controls are keyboard-focusable. Update `packages/frontend/src` components accordingly and add accessibility-focused tests.
