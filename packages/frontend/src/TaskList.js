@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   List, ListItem, ListItemText, IconButton, Checkbox, Typography, Box, CircularProgress, Paper, Chip
 } from '@mui/material';
@@ -11,9 +11,32 @@ function TaskList({ onEdit }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Helper functions for localStorage
+  const getTasks = () => {
+    const tasks = localStorage.getItem('tasks');
+    return tasks ? JSON.parse(tasks) : [];
+  };
+
+  const saveTasks = (tasks) => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  };
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = getTasks();
+      setTasks(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   const formatDueDate = (dateString) => {
     if (!dateString) return null;
@@ -27,28 +50,13 @@ function TaskList({ onEdit }) {
     });
   };
 
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/tasks');
-      if (!response.ok) throw new Error('Failed to fetch tasks');
-      const data = await response.json();
-      setTasks(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleToggleComplete = async (task) => {
     try {
-      await fetch(`/api/tasks/${task.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !task.completed })
-      });
+      const tasks = getTasks();
+      const updatedTasks = tasks.map(t => 
+        t.id === task.id ? { ...t, completed: !t.completed } : t
+      );
+      saveTasks(updatedTasks);
       fetchTasks();
     } catch (err) {
       setError('Failed to update task');
@@ -57,7 +65,9 @@ function TaskList({ onEdit }) {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      const tasks = getTasks();
+      const updatedTasks = tasks.filter(t => t.id !== id);
+      saveTasks(updatedTasks);
       fetchTasks();
     } catch (err) {
       setError('Failed to delete task');
@@ -203,6 +213,20 @@ function TaskList({ onEdit }) {
                 gap: 1
               }}
             >
+              <Chip
+                label={task.priority || 'P3'}
+                size="small"
+                sx={{
+                  height: 20,
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  backgroundColor: 
+                    task.priority === 'P1' ? '#f44336' :
+                    task.priority === 'P2' ? '#ff9800' : '#9e9e9e',
+                  color: 'white',
+                  mr: 1
+                }}
+              />
               {task.due_date && (
                 <Chip
                   icon={<EventIcon sx={{ fontSize: 14 }} />}

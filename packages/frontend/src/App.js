@@ -8,22 +8,35 @@ function App() {
   const [editingTask, setEditingTask] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Helper functions for localStorage
+  const getTasks = () => {
+    const tasks = localStorage.getItem('tasks');
+    return tasks ? JSON.parse(tasks) : [];
+  };
+
+  const saveTasks = (tasks) => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  };
+
   const handleSave = async (task) => {
+    const tasks = getTasks();
+    
     if (editingTask) {
       // Edit existing task
-      await fetch(`/api/tasks/${editingTask.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(task)
-      });
+      const updatedTasks = tasks.map(t => 
+        t.id === editingTask.id ? { ...task, id: editingTask.id, completed: t.completed } : t
+      );
+      saveTasks(updatedTasks);
       setEditingTask(null);
     } else {
-      // Add new task
-      await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(task)
-      });
+      // Add new task with default priority P3 if not set
+      const newTask = {
+        ...task,
+        id: Date.now().toString(),
+        completed: false,
+        priority: task.priority || 'P3'
+      };
+      saveTasks([...tasks, newTask]);
     }
     setRefreshKey(k => k + 1);
   };
