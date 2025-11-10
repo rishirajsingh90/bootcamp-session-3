@@ -172,9 +172,45 @@ function TaskForm({ onSave, initialTask }) {
             label="Priority"
             inputProps={{ 'data-testid': 'priority-input' }}
           >
-            <MenuItem value="P1">P1 - High</MenuItem>
-            <MenuItem value="P2">P2 - Medium</MenuItem>
-            <MenuItem value="P3">P3 - Low</MenuItem>
+            <MenuItem 
+              value="P1" 
+              sx={{ 
+                backgroundColor: priority === 'P1' ? '#07F2E6' : 'inherit',
+                color: priority === 'P1' ? 'white' : 'inherit',
+                '&:hover': {
+                  backgroundColor: '#07F2E6',
+                  color: 'white'
+                }
+              }}
+            >
+              P1 - High
+            </MenuItem>
+            <MenuItem 
+              value="P2"
+              sx={{ 
+                backgroundColor: priority === 'P2' ? '#7A7A7A' : 'inherit',
+                color: priority === 'P2' ? 'white' : 'inherit',
+                '&:hover': {
+                  backgroundColor: '#7A7A7A',
+                  color: 'white'
+                }
+              }}
+            >
+              P2 - Medium
+            </MenuItem>
+            <MenuItem 
+              value="P3"
+              sx={{ 
+                backgroundColor: priority === 'P3' ? '#7A7A7A' : 'inherit',
+                color: priority === 'P3' ? 'white' : 'inherit',
+                '&:hover': {
+                  backgroundColor: '#7A7A7A',
+                  color: 'white'
+                }
+              }}
+            >
+              P3 - Low
+            </MenuItem>
           </Select>
         </FormControl>
         {error && <Typography color="error" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{error}</Typography>}

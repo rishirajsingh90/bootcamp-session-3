@@ -216,13 +216,13 @@ function TaskList({ onEdit }) {
               <Chip
                 label={task.priority || 'P3'}
                 size="small"
+                className={task.priority === 'P1' ? 'priority-selected' : 'priority-unselected'}
                 sx={{
                   height: 20,
                   fontSize: '0.7rem',
                   fontWeight: 600,
                   backgroundColor: 
-                    task.priority === 'P1' ? '#f44336' :
-                    task.priority === 'P2' ? '#ff9800' : '#9e9e9e',
+                    task.priority === 'P1' ? '#07F2E6' : '#7A7A7A',
                   color: 'white',
                   mr: 1
                 }}
